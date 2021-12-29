@@ -54,9 +54,9 @@ curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add
 ```
 sudo kubeadm init --pod-network-cidr=10.244.0.0/16 --apiserver-advertise-address=192.168.99.102
 
-## 실행 후 반드시 아래 문구 저장 / Worker 노드 설정 시 필요
-kubeadm join <ip:6443> --token <token>\
-  --discoery-token-ca-cert-hash <token-hash>
+## Worker 노드 설정 시 필요 / Worker 노드에서 실행
+'kubeadm join <ip:6443> --token <token>\
+  --discoery-token-ca-cert-hash <token-hash>'
 
 # Master 노드 생성 후 실행
 mkdir -p $HOME/.kube 
