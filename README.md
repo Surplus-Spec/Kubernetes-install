@@ -3,7 +3,8 @@
 > Ubuntu: 18.04 <br/>Kubernetes: 1.9.0 <br/> docker: 18.06.2
 
 ### 설치 순서
-#### 1. docker install <br/> 2. docker setup<br/>3. Kubernetes install<br/>4. API Server 주소<br/>5. Master 노드 생성 및 설정<br/>6. Master 노드 Flannel 설치 및 확인<br/>7. Worker 노드 설정
+#### 1. docker install <br/> 2. docker setup<br/>3. Kubernetes install<br/>4. API Server 주소<br/>5. Master 노드 생성 및 설정<br/>6. Master 노드 Flannel 설치 및 확인<br/>7. Worker 노드 설정 <br/><br/> etc
+
 
 ------------
 #### docker install
@@ -52,6 +53,9 @@ curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add
   ![image](https://user-images.githubusercontent.com/37894081/147641971-4bd11ecb-eed1-4400-b62a-78a535a24fdf.png)
 #### Master 노드 생성 및 설정
 ```
+sudo swapoff -a
+sudo sed -i '/ swap / s/^/#/' /etc/fstab
+
 sudo kubeadm init --pod-network-cidr=10.244.0.0/16 --apiserver-advertise-address=192.168.99.102
 
 ## Worker 노드 설정 시 필요 / Worker 노드에서 실행
@@ -79,6 +83,46 @@ ifconfig
 kubeadm join <ip:6443> --token <token>\
   --discoery-token-ca-cert-hash <token-hash>
 ```
+
+#### etc
+##### Kubernetes 버전 확인
+```
+curl -s https://packages.cloud.google.com/apt/dists/kubernetes-xenial/main/binary-amd64/Packages | grep Version | awk '{print $2}'
+```
+##### 읽기전용파일 에러
+```
+sudo mount -o remount,rw /
+```
+
+##### docker 제거
+```
+sudo apt remove docker* containerd*
+sudo rm -rf /var/lib/docker
+sudo rm -rf /etc/docker/
+rm -rf ~/.docker/
+```
+
+##### Kubernetes 초기화 및 제거
+```
+sudo kubeadm reset
+sudo apt-get purge kubeadm kubectl kubelet kubernetes-cni kube*
+sudo apt-get autoremove  
+sudo rm -rf ~/.kube
+```
+
+##### Kubernetes 애드온(Flannel, cni) 제거
+```
+kubeadm reset
+systemctl stop kubelet
+systemctl stop docker
+rm -rf /var/lib/cni/
+rm -rf /var/lib/kubelet/*
+rm -rf /etc/cni/
+ifconfig cni0 down
+ifconfig flannel.1 down
+ifconfig docker0 down
+```
+
 #### Ref
 > https://medium.com/finda-tech/overview-8d169b2a54ff<br/>
 > https://velog.io/@dry8r3ad/Kubernetes-Cluster-Installation<br/>
